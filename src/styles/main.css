@@ -1,0 +1,24 @@
+.board {
+  padding: 5px;
+  width: fit-content;
+  height: fit-content;
+  display: grid;
+  grid-template-columns: repeat(10, 2em);
+  grid-template-rows: repeat(10, 2em);
+  place-content: center;
+  gap: 0.3em;
+}
+
+.board-cell {
+  border: solid 1px black;
+  width: 2em;
+  height: 2em;
+}
+
+.highlight {
+  background-color: grey;
+}
+
+.ship-placed {
+  background-color: red;
+}
