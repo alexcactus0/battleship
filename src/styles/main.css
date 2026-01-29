@@ -19,6 +19,7 @@
   background-color: grey;
 }
 
-.ship-placed {
+.ship-placed,
+.invalid {
   background-color: red;
 }

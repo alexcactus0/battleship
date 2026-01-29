@@ -4,52 +4,142 @@ export default function loadDom() {
   const playerSide = new Div('playerSide').element;
   const playerTitle = new Div('playerTitle').element;
 
-  let currentPlacement = [];
+  const rotateShipBtn = document.createElement('button');
+  const randomizeBtn = document.createElement('button');
+  randomizeBtn.textContent = 'Randomize';
+  rotateShipBtn.textContent = 'Rotate';
 
-  const ship = new Div('ship').element;
-  ship.textContent = 'SHIP';
-  ship.dataset.length = 3;
+  rotateShipBtn.addEventListener('click', () => {
+    isHorizontal = !isHorizontal;
+  });
 
-  const container = new Div('board').element;
-  const board = new Gameboard(container, 10);
+  // randomize helper
+  function getPlacementSquares(row, col, length, isHorizontal) {
+    const squares = [];
 
-  board.squares.flat().forEach((square) => {
-    square.addEventListener('mouseenter', () => {
-      board.squares.flat().forEach((sq) => sq.classList.remove('highlight'));
+    for (let i = 0; i < length; i++) {
+      const r = isHorizontal ? row : row + i;
+      const c = isHorizontal ? col + i : col;
 
-      currentPlacement = [];
+      const target = board.squares[r]?.[c];
+      if (!target) return null;
+      squares.push(target);
+    }
+    return squares;
+  }
+  // randomize helper
+  function isValidPlacement(squares) {
+    if (!squares) return false;
 
-      const length = Number(ship.dataset.length);
-      const row = Number(square.dataset.y);
-      const col = Number(square.dataset.x);
+    return squares.every((sq) => !sq.classList.contains('ship-placed'));
+  }
+  // randomize helper
+  function placeShipSquares(squares) {
+    squares.forEach((sq) => sq.classList.add('ship-placed'));
+  }
 
-      for (let i = 0; i < length; i++) {
-        const target = board.squares[row]?.[col + i];
-        if (target) {
-          target.classList.add('highlight');
-          currentPlacement.push(target);
+  randomizeBtn.addEventListener('click', () => {
+    board.squares.flat().forEach((sq) => {
+      sq.classList.remove('ship-placed');
+      sq.classList.remove('highlight');
+      sq.classList.remove('invalid');
+    });
+
+    for (let i = 0; i < 5; i++) {
+      const ship = new Ship();
+      let placed = false;
+
+      while (!placed) {
+        const isHorizontal = Math.random() < 0.5;
+
+        const row = Math.floor(Math.random() * board.size);
+        const col = Math.floor(Math.random() * board.size);
+
+        const squares = getPlacementSquares(
+          row,
+          col,
+          ship.length,
+          isHorizontal,
+        );
+
+        if (isValidPlacement(squares)) {
+          placeShipSquares(squares);
+          placed = true;
         }
       }
-    });
-
-    square.addEventListener('click', () => {
-      const length = Number(ship.dataset.length);
-
-      if (currentPlacement.length !== length) return;
-
-      currentPlacement.forEach((sq) => {
-        sq.classList.remove('highlight');
-        sq.classList.add('ship-placed');
-      });
-    });
+    }
   });
+
+  let currentPlacement = [];
+  let isValidPlace = false;
+  let shipIndex = 0;
+  let isHorizontal = true;
 
   const ships = [];
   for (let i = 0; i < 5; i++) {
     ships.push(new Ship());
   }
+  const container = new Div('board').element;
+  const board = new Gameboard(container, 10);
 
-  playerSide.append(playerTitle, container);
+  board.squares.flat().forEach((square) => {
+    square.addEventListener('mouseenter', () => {
+      if (shipIndex >= ships.length) return;
 
-  document.body.append(ship, playerSide);
+      board.squares.flat().forEach((sq) => {
+        sq.classList.remove('highlight');
+        sq.classList.remove('invalid');
+      });
+
+      currentPlacement = [];
+
+      const currentShip = ships[shipIndex];
+      if (!currentShip) return;
+      const length = currentShip.length;
+
+      const row = Number(square.dataset.y);
+      const col = Number(square.dataset.x);
+
+      for (let i = 0; i < length; i++) {
+        let target;
+
+        if (isHorizontal) {
+          target = board.squares[row]?.[col + i];
+        } else {
+          target = board.squares[row + i]?.[col];
+        }
+
+        if (target) currentPlacement.push(target);
+      }
+
+      isValidPlace = currentPlacement.length === length;
+
+      currentPlacement.forEach((sq) => {
+        sq.classList.add(isValidPlace ? 'highlight' : 'invalid');
+      });
+    });
+
+    square.addEventListener('click', () => {
+      if (shipIndex >= ships.length) return;
+      if (!isValidPlace) return;
+
+      const currentShip = ships[shipIndex];
+
+      currentPlacement.forEach((sq) => {
+        sq.classList.remove('highlight');
+        sq.classList.add('ship-placed');
+      });
+
+      currentShip.coordinates = currentPlacement.map((sq) => [
+        Number(sq.dataset.y),
+        Number(sq.dataset.x),
+      ]);
+
+      shipIndex++;
+    });
+  });
+
+  playerSide.append(rotateShipBtn, randomizeBtn, playerTitle, container);
+
+  document.body.append(playerSide);
 }
