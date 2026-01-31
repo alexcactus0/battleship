@@ -4,10 +4,13 @@ export default function loadDom() {
   const playerSide = new Div('playerSide').element;
   const playerTitle = new Div('playerTitle').element;
 
+  const btns = new Div('btns').element;
   const rotateShipBtn = document.createElement('button');
   const randomizeBtn = document.createElement('button');
   randomizeBtn.textContent = 'Randomize';
   rotateShipBtn.textContent = 'Rotate';
+
+  btns.append(rotateShipBtn, randomizeBtn);
 
   rotateShipBtn.addEventListener('click', () => {
     isHorizontal = !isHorizontal;
@@ -72,19 +75,81 @@ export default function loadDom() {
 
   let currentPlacement = [];
   let isValidPlace = false;
-  let shipIndex = 0;
   let isHorizontal = true;
+  let draggedShip = null;
+  let draggedShipEl = null;
 
+  // generating 5 Ships with fixed lengths for each
+  const availableLengths = [1, 2, 3, 4, 5];
   const ships = [];
+
   for (let i = 0; i < 5; i++) {
-    ships.push(new Ship());
+    const randomIndex = Math.floor(Math.random() * availableLengths.length);
+    const chosenLength = availableLengths.splice(randomIndex, 1)[0];
+
+    ships.push(new Ship(chosenLength));
   }
+
+  const shipsContainer = new Div('shipsContainer').element;
+
+  const destroyer = new Div('destroyer').element;
+  const cruiser = new Div('cruiser').element;
+  const submarine = new Div('submarine').element;
+  const battleship = new Div('battleship').element;
+  const carrier = new Div('carrier').element;
+
+  ships.forEach((ship) => {
+    const shipEl = new Div('ship').element;
+    shipEl.classList.add('ship');
+    shipEl.textContent = 'This Ship';
+    shipEl.setAttribute('draggable', 'true');
+    shipEl.style.cursor = 'grab';
+
+    shipEl.draggable = true;
+
+    shipEl.addEventListener('dragstart', () => {
+      draggedShip = ship;
+      draggedShipEl = shipEl;
+    });
+
+    shipEl.addEventListener('dragend', () => {
+      board.squares.flat().forEach((sq) => {
+        sq.classList.remove('highlight');
+        sq.classList.remove('invalid');
+      });
+    });
+
+    switch (ship.length) {
+      case 1:
+        destroyer.appendChild(shipEl);
+        break;
+      case 2:
+        cruiser.appendChild(shipEl);
+        break;
+      case 3:
+        submarine.appendChild(shipEl);
+        break;
+      case 4:
+        battleship.appendChild(shipEl);
+        break;
+      case 5:
+        carrier.appendChild(shipEl);
+        break;
+    }
+  });
+
+  shipsContainer.append(destroyer, cruiser, submarine, battleship, carrier);
+
   const container = new Div('board').element;
   const board = new Gameboard(container, 10);
 
   board.squares.flat().forEach((square) => {
+    square.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
     square.addEventListener('mouseenter', () => {
-      if (shipIndex >= ships.length) return;
+      if (!draggedShip) return;
 
       board.squares.flat().forEach((sq) => {
         sq.classList.remove('highlight');
@@ -93,9 +158,7 @@ export default function loadDom() {
 
       currentPlacement = [];
 
-      const currentShip = ships[shipIndex];
-      if (!currentShip) return;
-      const length = currentShip.length;
+      const length = draggedShip.length;
 
       const row = Number(square.dataset.y);
       const col = Number(square.dataset.x);
@@ -112,7 +175,9 @@ export default function loadDom() {
         if (target) currentPlacement.push(target);
       }
 
-      isValidPlace = currentPlacement.length === length;
+      isValidPlace =
+        currentPlacement.length === length &&
+        currentPlacement.every((sq) => !sq.classList.contains('ship-placed'));
 
       currentPlacement.forEach((sq) => {
         sq.classList.add(isValidPlace ? 'highlight' : 'invalid');
@@ -120,26 +185,29 @@ export default function loadDom() {
     });
 
     square.addEventListener('click', () => {
-      if (shipIndex >= ships.length) return;
+      if (!draggedShip) return;
       if (!isValidPlace) return;
-
-      const currentShip = ships[shipIndex];
 
       currentPlacement.forEach((sq) => {
         sq.classList.remove('highlight');
+        sq.classList.remove('invalid');
         sq.classList.add('ship-placed');
       });
 
-      currentShip.coordinates = currentPlacement.map((sq) => [
+      draggedShip.coordinates = currentPlacement.map((sq) => [
         Number(sq.dataset.y),
         Number(sq.dataset.x),
       ]);
 
-      shipIndex++;
+      draggedShipEl.remove();
+
+      // reset dragging
+      draggedShip = null;
+      draggedShipEl = null;
     });
   });
 
-  playerSide.append(rotateShipBtn, randomizeBtn, playerTitle, container);
+  playerSide.append(btns, shipsContainer, playerTitle, container);
 
   document.body.append(playerSide);
 }

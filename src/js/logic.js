@@ -14,10 +14,8 @@ export function Div(className, row, col) {
 }
 
 export class Ship {
-  constructor() {
-    const preferedLengths = [1, 2, 3, 4, 5];
-    this.length =
-      preferedLengths[Math.floor(Math.random() * preferedLengths.length)];
+  constructor(length) {
+    this.length = length;
     this.numberOfHits = 0;
     this.isShipSunk = false;
     this.coordinates = [];
