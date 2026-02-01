@@ -61,12 +61,16 @@ export class Gameboard {
   }
 
   receiveAttack([row, col]) {
-    const wasMissed = this.missedShots.some(([r, c]) => r === row && c === col);
+    if (
+      this.missedShots.some(([r, c]) => r === row && c === col) ||
+      this.hitShots.some(([r, c]) => r === row && c === col)
+    ) {
+      return 'already-attacked';
+    }
 
-    const wasHit = this.hitShots.some(([r, c]) => r === row && c === col);
-    if (wasMissed || wasHit) return 'already-attacked';
-
-    const ship = this.getShip(row, col);
+    const ship = this.ships.find((s) =>
+      s.coordinates.some(([r, c]) => r === row && c === col),
+    );
 
     if (!ship) {
       this.missedShots.push([row, col]);
@@ -76,11 +80,12 @@ export class Gameboard {
     ship.hit();
     this.hitShots.push([row, col]);
 
-    if (ship.isShipSunk) {
-      return 'sunk';
-    }
-
+    if (ship.isShipSunk) return 'sunk';
     return 'hit';
+  }
+
+  allShipsSunk() {
+    return this.ships.every((ship) => ship.isShipSunk);
   }
 }
 

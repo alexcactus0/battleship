@@ -57,7 +57,7 @@ export default function loadDom() {
 
   // randomize Btn helper (rebuilds ships UI)
   function renderShips() {
-    const shipsContainer = new Div('shipsContainer').element;
+    shipsContainer.innerHTML = '';
 
     const destroyer = new Div('destroyer').element;
     const cruiser = new Div('cruiser').element;
@@ -114,6 +114,8 @@ export default function loadDom() {
 
     renderShips();
 
+    playerBoard.ships = [];
+
     ships.forEach((ship) => {
       let placed = false;
 
@@ -137,37 +139,14 @@ export default function loadDom() {
             Number(sq.dataset.y),
             Number(sq.dataset.x),
           ]);
+          playerBoard.placeShip(ship, ship.coordinates);
 
           placed = true;
         }
       }
     });
 
-    destroyer.innerHTML = 'Destroyer (1)';
-    destroyer.style.border = 'solid 1px black';
-    destroyer.style.padding = '0.5em';
-    destroyer.style.width = '8em';
-
-    cruiser.innerHTML = 'Cruiser (2)';
-    cruiser.style.border = 'solid 1px black';
-    cruiser.style.padding = '0.5em';
-    cruiser.style.width = '8em';
-
-    submarine.innerHTML = 'Submarine (3)';
-    submarine.style.border = 'solid 1px black';
-    submarine.style.padding = '0.5em';
-    submarine.style.width = '8em';
-
-    battleship.innerHTML = 'Battleship (4)';
-    battleship.style.border = 'solid 1px black';
-    battleship.style.padding = '0.5em';
-    battleship.style.width = '8em';
-
-    carrier.innerHTML = 'Carrier (5)';
-    carrier.style.border = 'solid 1px black';
-    carrier.style.padding = '0.5em';
-    carrier.style.width = '8em';
-
+    shipsContainer.innerHTML = '';
     draggedShip = null;
     draggedShipEl = null;
   });
@@ -340,6 +319,9 @@ export default function loadDom() {
       return;
     }
 
+    rotateShipBtn.remove();
+    randomizeBtn.remove();
+
     if (computerBoard) return;
 
     const computerSide = new Div('computerSide').element;
@@ -356,7 +338,16 @@ export default function loadDom() {
     placeComputerShips();
 
     enableComputerAttacks();
+
+    resetGameBtn();
   });
+
+  function resetGameBtn() {
+    const resetBtn = new Div('resetBtn').element;
+    resetBtn.textContent = 'Reset Game';
+
+    resetBtn.addEventListener('click', () => {});
+  }
 
   function getPlacementSquaresOnUI(squares, row, col, length, isHorizontal) {
     const placement = [];
@@ -394,7 +385,7 @@ export default function loadDom() {
           isHorizontal,
         );
 
-        if (!getPlacementSquares) continue;
+        if (!placementSquares) continue;
 
         const ok = placementSquares.every(
           (sq) => !sq.classList.contains('computer-ship'),
@@ -415,6 +406,63 @@ export default function loadDom() {
       }
     });
   }
+
+  function enableComputerAttacks() {
+    computerSquares.flat().forEach((square) => {
+      square.addEventListener('click', () => {
+        if (!playerTurn) return;
+
+        const row = Number(square.dataset.y);
+        const col = Number(square.dataset.x);
+
+        const result = computerBoard.receiveAttack([row, col]);
+
+        if (result === 'already-attacked') return;
+
+        if (result === 'miss') {
+          square.classList.add('miss');
+          playerTurn = false;
+          setTimeout(computerMove, 500); // A Timeout before the comp attacks
+        } else {
+          square.classList.add('hit');
+          if (result === 'sunk') console.log('You sunk a computer ship!');
+        }
+
+        if (computerBoard.allShipsSunk()) {
+          alert('You win!');
+        }
+      });
+    });
+  }
+
+  function computerMove() {
+    let row;
+    let col;
+    let result;
+
+    do {
+      row = Math.floor(Math.random() * 10);
+      col = Math.floor(Math.random() * 10);
+      result = playerBoard.receiveAttack([row, col]);
+    } while (result === 'already-attacked'); // chatgpt Loop
+
+    const square = playerSquares[row][col];
+
+    if (result === 'miss') {
+      square.classList.add('miss');
+      playerTurn = true;
+    } else {
+      square.classList.add('hit');
+      if (result === 'sunk') console.log('computer sunk a ship!');
+      setTimeout(computerMove, 500);
+    }
+
+    if (playerBoard.allShipsSunk()) {
+      alert('Computer wins!');
+    }
+  }
+
+  let playerTurn = true;
 
   playerSide.append(
     btns,

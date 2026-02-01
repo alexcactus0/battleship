@@ -11,16 +11,18 @@ body {
   font-family: 'roboto';
   height: 100vh;
   width: 98vw;
-  display: grid;
-  place-content: center;
+  display: flex;
+  align-items: center;
 }
-
-.playerSide {
+.playerSide,
+.computerSide {
   width: 100%;
-  height: 100%;
+  height: 70%;
   display: grid;
   grid-template-columns: 10em 30em;
   grid-template-rows: repeat(2, 2em) 25em 3em;
+  place-content: center;
+  border: solid 1px black;
 }
 
 .btns {
@@ -65,7 +67,8 @@ button {
   /* font-size: 0.8em; */
 }
 
-.board {
+.board,
+.computerBoard {
   width: 100%;
   height: 100%;
   display: grid;
@@ -87,7 +90,19 @@ button {
   background-color: grey;
 }
 
-.ship-placed,
+.ship-placed {
+  background-color: blue;
+}
+
 .invalid {
   background-color: red;
+}
+
+.board-cell.miss {
+  background-color: grey;
+}
+
+.computer-ship.hit,
+.ship-placed.hit {
+  background-color: green;
 }
