@@ -358,6 +358,64 @@ export default function loadDom() {
     enableComputerAttacks();
   });
 
+  function getPlacementSquaresOnUI(squares, row, col, length, isHorizontal) {
+    const placement = [];
+
+    for (let i = 0; i < length; i++) {
+      const r = isHorizontal ? row : row + i;
+      const c = isHorizontal ? col + i : col;
+
+      const target = squares[r]?.[c];
+      if (!target) return null;
+
+      placement.push(target);
+    }
+
+    return placement;
+  }
+
+  function placeComputerShips() {
+    const lengths = [1, 2, 3, 4, 5];
+
+    lengths.forEach((length) => {
+      const ship = new Ship(length);
+      let placed = false;
+
+      while (!placed) {
+        const isHorizontal = Math.random() < 0.5;
+        const row = Math.floor(Math.random() * 10);
+        const col = Math.floor(Math.random() * 10);
+
+        const placementSquares = getPlacementSquaresOnUI(
+          computerSquares,
+          row,
+          col,
+          length,
+          isHorizontal,
+        );
+
+        if (!getPlacementSquares) continue;
+
+        const ok = placementSquares.every(
+          (sq) => !sq.classList.contains('computer-ship'),
+        );
+
+        if (!ok) continue;
+
+        placementSquares.forEach((sq) => sq.classList.add('computer-ship'));
+
+        const coords = placementSquares.map((sq) => [
+          Number(sq.dataset.y),
+          Number(sq.dataset.x),
+        ]);
+
+        computerBoard.placeShip(ship, coords);
+
+        placed = true;
+      }
+    });
+  }
+
   playerSide.append(
     btns,
     shipsContainer,
