@@ -23,42 +23,64 @@ export class Ship {
 
   hit() {
     this.numberOfHits++;
+    if (this.numberOfHits >= this.length) this.isShipSunk = true;
   }
 
   isSunk() {
-    let maxNumberOfHits = this.length;
-    if (this.length === 0 && this.numberOfHits === this.length)
-      return (this.isShipSunk = true);
+    return this.isShipSunk;
   }
 }
 
 export class Gameboard {
-  constructor(gameboardContainer, size) {
-    this.gameboardContainer = gameboardContainer;
+  constructor(size = 10) {
     this.size = size;
-    this.squares = [];
+    this.ships = [];
+    this.missedShots = [];
+    this.hitShots = [];
+  }
 
-    for (let row = 0; row < size; row++) {
-      const rowArray = [];
-      for (let col = 0; col < size; col++) {
-        const square = new Div('board-cell', row, col).element;
-        if (this.gameboardContainer) {
-          this.gameboardContainer.appendChild(square);
+  placeShip(ship, coordinates) {
+    ship.coordinates = coordinates;
+    this.ships.push(ship);
+  }
+
+  getShip(row, col) {
+    for (let i = 0; i < this.ships.length; i++) {
+      const ship = this.ships[i];
+
+      for (let j = 0; j < ship.coordinates.length; j++) {
+        const [r, c] = ship.coordinates[j];
+
+        if (r === row && c === col) {
+          return ship;
         }
-        rowArray.push(square);
       }
-      this.squares.push(rowArray);
     }
+
+    return null;
   }
 
-  dragShipsOnBoard() {
-    // drag the Ships and place them on Gameboard
-  }
+  receiveAttack([row, col]) {
+    const wasMissed = this.missedShots.some(([r, c]) => r === row && c === col);
 
-  receiveAttack(coordinates) {
-    let misses = 0;
-    // Hits a ship?
-    // If not misses++
+    const wasHit = this.hitShots.some(([r, c]) => r === row && c === col);
+    if (wasMissed || wasHit) return 'already-attacked';
+
+    const ship = this.getShip(row, col);
+
+    if (!ship) {
+      this.missedShots.push([row, col]);
+      return 'miss';
+    }
+
+    ship.hit();
+    this.hitShots.push([row, col]);
+
+    if (ship.isShipSunk) {
+      return 'sunk';
+    }
+
+    return 'hit';
   }
 }
 
