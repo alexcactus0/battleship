@@ -22,16 +22,26 @@ body {
   grid-template-columns: 10em 30em;
   grid-template-rows: repeat(2, 2em) 25em 3em;
   place-content: center;
-  border: solid 1px black;
+}
+
+.playerTitle {
+  grid-column: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rotateText {
+  display: flex;
 }
 
 .btns {
-  width: 100%;
+  width: 65%;
   height: 100%;
   grid-column: 2;
   grid-row: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
   gap: 3em;
 }
 
@@ -62,6 +72,7 @@ button {
 
 .ship {
   border: solid 1px black;
+  border-radius: 0.5em;
   width: 8em;
   padding: 0.5em;
   /* font-size: 0.8em; */

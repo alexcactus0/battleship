@@ -14,6 +14,10 @@ export default function loadDom() {
 
   rotateShipBtn.addEventListener('click', () => {
     isHorizontal = !isHorizontal;
+    if (!isHorizontal) rotateText.textContent = 'Orientation: Vertical';
+    else {
+      rotateText.textContent = 'Orientation: Horizontal';
+    }
   });
 
   // randomize Btn helper
@@ -156,6 +160,10 @@ export default function loadDom() {
   let isHorizontal = true;
   let draggedShip = null;
   let draggedShipEl = null;
+
+  const rotateText = new Div('rotateText').element;
+  rotateText.textContent = 'Orientation: Horizontal';
+  playerTitle.append(rotateText, btns);
 
   // generating 5 Ships with fixed lengths for each
   const availableLengths = [1, 2, 3, 4, 5];
@@ -321,6 +329,8 @@ export default function loadDom() {
 
     rotateShipBtn.remove();
     randomizeBtn.remove();
+    shipsContainer.remove();
+    startGameBtn.remove();
 
     if (computerBoard) return;
 
@@ -464,13 +474,7 @@ export default function loadDom() {
 
   let playerTurn = true;
 
-  playerSide.append(
-    btns,
-    shipsContainer,
-    playerTitle,
-    container,
-    startBtnContainer,
-  );
+  playerSide.append(shipsContainer, playerTitle, container, startBtnContainer);
 
   document.body.append(playerSide);
 }
