@@ -1,6 +1,69 @@
 import { Div, Ship, Gameboard } from './logic.js';
+import icon from '../images/icon.svg';
 
 export default function loadDom() {
+  const profileCon = new Div('profileCon').element;
+  const profile = new Div('profile').element;
+  const profileIcon = new Div('profileIcon').element;
+  const iconImg = document.createElement('img');
+  iconImg.src = icon;
+  profileIcon.appendChild(iconImg);
+
+  // dialog for profile Name
+  const dialog = document.createElement('dialog');
+  const form = document.createElement('form');
+  const label = document.createElement('label');
+  const input = document.createElement('input');
+
+  const modalBtns = new Div('modalBtns').element;
+  const submitBtn = document.createElement('button');
+  const cancelBtn = document.createElement('button');
+
+  const modalTitle = document.createElement('h2');
+  modalTitle.textContent = 'Enter the Username Captain!';
+
+  form.method = 'dialog';
+  form.id = 'form';
+  form.setAttribute('novalidate', '');
+
+  label.setAttribute('for', 'name');
+  label.textContent = 'Username: ';
+
+  input.type = 'text';
+  input.name = 'name';
+  input.id = 'name';
+
+  submitBtn.setAttribute('data-create-modal', '');
+  submitBtn.textContent = 'Submit';
+
+  cancelBtn.setAttribute('data-close-modal', '');
+  cancelBtn.textContent = 'Cancel';
+  modalBtns.append(submitBtn, cancelBtn);
+
+  form.append(modalTitle, label, input, modalBtns);
+
+  dialog.appendChild(form);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  document.body.appendChild(overlay);
+
+  profileIcon.addEventListener('click', () => {
+    overlay.classList.add('show');
+    document.body.appendChild(dialog);
+    dialog.showModal();
+  });
+
+  dialog.addEventListener('close', () => {
+    overlay.classList.remove('show');
+  });
+
+  const profileText = new Div('profileText').element;
+  profileText.textContent = 'Add Profile';
+
+  profile.append(profileIcon, profileText);
+  profileCon.appendChild(profile);
+
   const playerSide = new Div('playerSide').element;
   const playerTitle = new Div('playerTitle').element;
 
@@ -330,7 +393,9 @@ export default function loadDom() {
     rotateShipBtn.remove();
     randomizeBtn.remove();
     shipsContainer.remove();
-    startGameBtn.remove();
+    startBtnContainer.remove();
+
+    // playerTitle.textContent = ''
 
     if (computerBoard) return;
 
@@ -350,6 +415,12 @@ export default function loadDom() {
     enableComputerAttacks();
 
     resetGameBtn();
+
+    playerSide.style.display = 'flex';
+    playerSide.style.flexDirection = 'column';
+
+    computerSide.style.display = 'flex';
+    computerSide.style.flexDirection = 'column';
   });
 
   function resetGameBtn() {
@@ -476,5 +547,5 @@ export default function loadDom() {
 
   playerSide.append(shipsContainer, playerTitle, container, startBtnContainer);
 
-  document.body.append(playerSide);
+  document.body.append(profileCon, playerSide);
 }
