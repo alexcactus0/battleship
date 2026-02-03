@@ -1,5 +1,6 @@
-import { Div, Ship, Gameboard } from './logic.js';
+import { Div, Ship, Gameboard, Dialog } from './logic.js';
 import icon from '../images/icon.svg';
+import created from '../images/created.svg';
 
 export default function loadDom() {
   const profileCon = new Div('profileCon').element;
@@ -9,40 +10,66 @@ export default function loadDom() {
   iconImg.src = icon;
   profileIcon.appendChild(iconImg);
 
+  const profileText = new Div('profileText').element;
+  profileText.textContent = 'Add Profile';
+
+  profile.append(profileIcon, profileText);
+  profileCon.appendChild(profile);
+
   // dialog for profile Name
-  const dialog = document.createElement('dialog');
-  const form = document.createElement('form');
-  const label = document.createElement('label');
-  const input = document.createElement('input');
+  const profileDialog = new Dialog(
+    'dialog',
+    'profileForm',
+    'Enter the Username Captain!',
+    true,
+    'Username: ',
+    'name',
+    true,
+    'text',
+    'name',
+    'name',
+    'submitName',
+    'Submit',
+    true,
+    'cancelName',
+  );
 
-  const modalBtns = new Div('modalBtns').element;
-  const submitBtn = document.createElement('button');
-  const cancelBtn = document.createElement('button');
+  const profileDialogEl = profileDialog.render();
+  document.body.append(profileDialogEl);
 
-  const modalTitle = document.createElement('h2');
-  modalTitle.textContent = 'Enter the Username Captain!';
+  const endDialog = new Dialog(
+    'dialog',
+    'endForm',
+    'YOU WON!',
+    false,
+    '',
+    '',
+    false,
+    '',
+    '',
+    '',
+    'restartBtn',
+    'Restart',
+    false,
+    '',
+  );
 
-  form.method = 'dialog';
-  form.id = 'form';
-  form.setAttribute('novalidate', '');
+  const endDialogEl = endDialog.render();
+  document.body.append(endDialogEl);
 
-  label.setAttribute('for', 'name');
-  label.textContent = 'Username: ';
+  document.querySelector('.restartBtn').addEventListener('click', (e) => {
+    e.preventDefault();
+    location.reload();
+  });
 
-  input.type = 'text';
-  input.name = 'name';
-  input.id = 'name';
+  document.querySelector('.submitName').addEventListener('click', () => {
+    const userName = document.getElementById('name').value.toUpperCase();
+    if (!userName) return;
 
-  submitBtn.setAttribute('data-create-modal', '');
-  submitBtn.textContent = 'Submit';
-
-  cancelBtn.setAttribute('data-close-modal', '');
-  cancelBtn.textContent = 'Cancel';
-  modalBtns.append(submitBtn, cancelBtn);
-
-  form.append(modalTitle, label, input, modalBtns);
-
-  dialog.appendChild(form);
+    iconImg.src = created;
+    profileText.textContent = userName;
+    userWaters.textContent = `${userName} WATERS`;
+  });
 
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
@@ -50,19 +77,12 @@ export default function loadDom() {
 
   profileIcon.addEventListener('click', () => {
     overlay.classList.add('show');
-    document.body.appendChild(dialog);
-    dialog.showModal();
+    profileDialogEl.showModal();
   });
 
-  dialog.addEventListener('close', () => {
+  profileDialogEl.addEventListener('close', () => {
     overlay.classList.remove('show');
   });
-
-  const profileText = new Div('profileText').element;
-  profileText.textContent = 'Add Profile';
-
-  profile.append(profileIcon, profileText);
-  profileCon.appendChild(profile);
 
   const playerSide = new Div('playerSide').element;
   const playerTitle = new Div('playerTitle').element;
@@ -70,6 +90,9 @@ export default function loadDom() {
   const btns = new Div('btns').element;
   const rotateShipBtn = document.createElement('button');
   const randomizeBtn = document.createElement('button');
+  const userWaters = new Div('userWaters').element;
+  userWaters.textContent = 'FRIENDLY WATERS';
+
   randomizeBtn.textContent = 'Randomize';
   rotateShipBtn.textContent = 'Rotate';
 
@@ -77,9 +100,9 @@ export default function loadDom() {
 
   rotateShipBtn.addEventListener('click', () => {
     isHorizontal = !isHorizontal;
-    if (!isHorizontal) rotateText.textContent = 'Orientation: Vertical';
+    if (!isHorizontal) rotateText.textContent = 'Orientation: VERTICAL';
     else {
-      rotateText.textContent = 'Orientation: Horizontal';
+      rotateText.textContent = 'Orientation: HORIZONTAL';
     }
   });
 
@@ -225,8 +248,8 @@ export default function loadDom() {
   let draggedShipEl = null;
 
   const rotateText = new Div('rotateText').element;
-  rotateText.textContent = 'Orientation: Horizontal';
-  playerTitle.append(rotateText, btns);
+  rotateText.textContent = 'Orientation: HORIZONTAL';
+  playerTitle.append(rotateText, btns, userWaters);
 
   // generating 5 Ships with fixed lengths for each
   const availableLengths = [1, 2, 3, 4, 5];
@@ -390,18 +413,17 @@ export default function loadDom() {
       return;
     }
 
-    rotateShipBtn.remove();
-    randomizeBtn.remove();
+    btns.remove();
+    rotateText.remove();
+    profileCon.remove();
     shipsContainer.remove();
     startBtnContainer.remove();
-
-    // playerTitle.textContent = ''
 
     if (computerBoard) return;
 
     const computerSide = new Div('computerSide').element;
     const computerTitle = new Div('computerTitle').element;
-    computerTitle.textContent = 'Computer Board';
+    computerTitle.textContent = 'ENEMY WATERS';
 
     computerContainer = new Div('computerBoard').element;
     computerSide.append(computerTitle, computerContainer);
@@ -510,7 +532,7 @@ export default function loadDom() {
         }
 
         if (computerBoard.allShipsSunk()) {
-          alert('You win!');
+          endDialogEl.showModal();
         }
       });
     });
@@ -539,7 +561,7 @@ export default function loadDom() {
     }
 
     if (playerBoard.allShipsSunk()) {
-      alert('Computer wins!');
+      endDialog.modalTitle.textContent = 'YOU LOST TO COMPUTER!';
     }
   }
 
