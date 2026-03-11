@@ -138,6 +138,8 @@ export class Dialog {
     const label = document.createElement('label');
     const input = document.createElement('input');
 
+    title.classList.add('dialog-title');
+
     const modalBtns = new Div('modalBtns').element;
     const submitBtn = document.createElement('button');
     const cancelBtn = document.createElement('button');

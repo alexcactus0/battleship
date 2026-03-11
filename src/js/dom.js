@@ -59,6 +59,7 @@ export default function loadDom() {
 
   document.querySelector('.restartBtn').addEventListener('click', (e) => {
     e.preventDefault();
+    overlay.classList.remove('show');
     location.reload();
   });
 
@@ -273,7 +274,6 @@ export default function loadDom() {
   ships.forEach((ship) => {
     const shipEl = new Div('ship').element;
     shipEl.classList.add('ship');
-    // shipEl.textContent = 'This Ship';
     shipEl.setAttribute('draggable', 'true');
     shipEl.style.cursor = 'grab';
 
@@ -532,6 +532,7 @@ export default function loadDom() {
         }
 
         if (computerBoard.allShipsSunk()) {
+          overlay.classList.add('show');
           endDialogEl.showModal();
         }
       });
@@ -547,7 +548,7 @@ export default function loadDom() {
       row = Math.floor(Math.random() * 10);
       col = Math.floor(Math.random() * 10);
       result = playerBoard.receiveAttack([row, col]);
-    } while (result === 'already-attacked'); // chatgpt Loop
+    } while (result === 'already-attacked');
 
     const square = playerSquares[row][col];
 
@@ -561,10 +562,12 @@ export default function loadDom() {
     }
 
     if (playerBoard.allShipsSunk()) {
-      endDialog.modalTitle.textContent = 'YOU LOST TO COMPUTER!';
+      const title = endDialogEl.querySelector('.dialog-title');
+      title.textContent = 'YOU LOST TO COMPUTER';
+      overlay.classList.add('show');
+      endDialogEl.showModal();
     }
   }
-
   let playerTurn = true;
 
   playerSide.append(shipsContainer, playerTitle, container, startBtnContainer);
