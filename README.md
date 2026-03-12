@@ -3,6 +3,8 @@
 ## Overview
 This project is an implementation of the classic Battleship game built with JavaScript. The game allows a player to battle against a computer by attacking coordinates on a gameboard until all ships of one side are sunk.
 
+The main goal of this project was to practice Test Driven Development (TDD) and writing unit tests using Jest.
+
 ## Features
 - Classic Battleship gameplay
 - Player vs computer
